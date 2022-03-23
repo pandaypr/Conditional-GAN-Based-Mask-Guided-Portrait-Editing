@@ -57,10 +57,10 @@ class Pix2PixHD_mask_Model(BaseModel):
         netG_input_nc = input_nc        
         if not opt.no_instance:
             netG_input_nc += 1
-        
+        print('netG_input_nc',netG_input_nc)
         self.netG = networks.define_embed_bg_G(netG_input_nc, opt.output_nc, opt.ngf, opt.netG, 
                                        opt.n_downsample_global, 9, opt.n_local_enhancers, 
-                                       opt.n_blocks_local, opt.norm, 256*5, gpu_ids=self.gpu_ids)
+                                       opt.n_blocks_local, opt.norm, 256*10, gpu_ids=self.gpu_ids)
         
         # self.netG = networks.define_embed_G(netG_input_nc, opt.output_nc, opt.ngf, opt.netG, 
         #                                opt.n_downsample_global, 9, opt.n_local_enhancers, 
@@ -352,10 +352,37 @@ class Pix2PixHD_mask_Model(BaseModel):
 
         # use masked mouth region
         mask_mouth_image = mask_mouth * mask_mouth_image
+        #print('input_label[:,8,:,:]',input_label[:,8:9,:,:].shape)
+        BG_mask = input_label[:,0:1,:,:]
+        SK_mask = input_label[:,1:2,:,:]
+        LB_mask = input_label[:,2:3,:,:]
+        RB_mask = input_label[:,3:4,:,:]
+        LE_mask = input_label[:,4:5,:,:]
+        RE_mask = input_label[:,5:6,:,:]
+        NO_mask = input_label[:,6:7,:,:]
+        UL_mask = input_label[:,7:8,:,:]
+        MO_mask = input_label[:,8:9,:,:]
+        LL_mask = input_label[:,9:10,:,:]
+        HA_mask = input_label[:,10:,:,:]
+        #print('HA_mask',HA_mask.shape)
+        '''mask_skin_pic = input_label[1,4:5,:,:].cpu()
+        mask_skin_pic= transforms.functional.to_pil_image(mask_skin_pic)   
+        mask_skin_pic.save('LeftEye.png')'''
+        combinedLabel_mask=torch.cat((BG_mask,NO_mask),1)
+        combinedLabel = self.netG.forward(torch.cat((BG_mask,NO_mask),1),type="combined_model") #Background and Nose encoder
+        encode_label_feature = self.netG.forward(SK_mask,type="label_encoder")                  #Skin Mask Encoder
+        encode_label_feature_LE = self.netG.forward(torch.cat((LB_mask,LE_mask),1),type="combined_model") #Left Eye Encoder
+        encode_label_feature_RE = self.netG.forward(torch.cat((RB_mask,RE_mask),1),type="combined_model") #Right Eye Encoder
+        encode_label_feature_MO = self.netG.forward(torch.cat((UL_mask,LL_mask,MO_mask),1),type="Tri_Model") #Mouth Encoder
+        encode_label_feature_HA = self.netG.forward(HA_mask,type="label_encoder") #Hair Encoder
+        mask_skin_pic = combinedLabel_mask[0,1,:,:].cpu()
+        mask_skin_pic= transforms.functional.to_pil_image(mask_skin_pic)   
+        mask_skin_pic.save('input_label.png')
 
 
-        encode_label_feature = self.netG.forward(input_label,type="label_encoder")
+        #print('encode_label_feature',encode_label_feature.shape)
         bg_feature = self.netG.forward(real_bg_image,type="bg_encoder")
+        #print('bg_feature',bg_feature.shape)
         mask_bg = (label==0).type(torch.cuda.FloatTensor)
         mask_bg_feature = mask_bg * bg_feature
 
@@ -450,7 +477,7 @@ class Pix2PixHD_mask_Model(BaseModel):
             except:
                 print("wrong0 ! ")
 
-        reconstruct_transfer_face = self.netG.forward(torch.cat((encode_label_feature,reorder_left_eye_tensor,reorder_right_eye_tensor,reorder_decode_embed_feature_skin,reorder_decode_embed_feature_hair,reorder_mouth_tensor),1),type="image_G")
+        reconstruct_transfer_face = self.netG.forward(torch.cat((combinedLabel,encode_label_feature,encode_label_feature_LE,encode_label_feature_RE,encode_label_feature_MO,encode_label_feature_HA,reorder_left_eye_tensor,reorder_right_eye_tensor,reorder_decode_embed_feature_skin,reorder_decode_embed_feature_hair,reorder_mouth_tensor),1),type="image_G")
 
         reconstruct_transfer_image = self.netG.forward(torch.cat((reconstruct_transfer_face,mask_bg_feature),1),type="bg_decoder")
 
@@ -488,7 +515,7 @@ class Pix2PixHD_mask_Model(BaseModel):
 
         # loss_KL4 = -0.5*torch.sum(-log_variances4.exp() - torch.pow(mus4,2) + log_variances4 + 1, 1)
 
-        reconstruct_face = self.netG.forward(torch.cat((encode_label_feature,left_eye_tensor,right_eye_tensor,decode_embed_feature_skin,decode_embed_feature_hair,mouth_tensor),1),type="image_G")
+        reconstruct_face = self.netG.forward(torch.cat((combinedLabel,encode_label_feature,encode_label_feature_LE,encode_label_feature_RE,encode_label_feature_MO,encode_label_feature_HA,left_eye_tensor,right_eye_tensor,decode_embed_feature_skin,decode_embed_feature_hair,mouth_tensor),1),type="image_G")
 
         reconstruct_image = self.netG.forward(torch.cat((reconstruct_face,mask_bg_feature),1),type="bg_decoder")        
 
@@ -1197,6 +1224,7 @@ class Pix2PixHD_mask_Model(BaseModel):
         self.save_network(self.net_decoder_right_eye_image, 'decoder_right_eye_image', which_epoch, self.gpu_ids)
         self.save_network(self.net_decoder_mouth_image, 'decoder_mouth_image', which_epoch, self.gpu_ids)
         self.save_network(self.netP, 'P', which_epoch, self.gpu_ids)
+        
 
     def update_fixed_params(self):
         # after fixing the global generator for a number of iterations, also start finetuning it
