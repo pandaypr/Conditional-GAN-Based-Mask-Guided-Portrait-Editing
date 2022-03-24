@@ -92,21 +92,21 @@ class Pix2PixHD_mask_Model(BaseModel):
         self.net_encoder_left_eye = networks.define_encoder_mask(longsize=32, norm=opt.norm, gpu_ids=self.gpu_ids)
         self.net_encoder_right_eye = networks.define_encoder_mask(longsize=32, norm=opt.norm, gpu_ids=self.gpu_ids)
         self.net_encoder_mouth = networks.define_encoder_mask(longsize=80, norm=opt.norm, gpu_ids=self.gpu_ids)
-        self.net_encoder_nose = networks.define_encoder_mask(longsize=80, norm=opt.norm, gpu_ids=self.gpu_ids)
+        self.net_encoder_nose = networks.define_encoder_mask(longsize=30, norm=opt.norm, gpu_ids=self.gpu_ids)
 
         self.net_decoder_skin = networks.define_decoder_mask(longsize=256, norm=opt.norm, gpu_ids=self.gpu_ids)
         self.net_decoder_hair = networks.define_decoder_mask(longsize=256, norm=opt.norm, gpu_ids=self.gpu_ids)
         self.net_decoder_left_eye = networks.define_decoder_mask(longsize=32, norm=opt.norm, gpu_ids=self.gpu_ids)
         self.net_decoder_right_eye = networks.define_decoder_mask(longsize=32, norm=opt.norm, gpu_ids=self.gpu_ids)
         self.net_decoder_mouth = networks.define_decoder_mask(longsize=80, norm=opt.norm, gpu_ids=self.gpu_ids)
-        self.net_decoder_nose = networks.define_decoder_mask(longsize=80, norm=opt.norm, gpu_ids=self.gpu_ids)
+        self.net_decoder_nose = networks.define_decoder_mask(longsize=30, norm=opt.norm, gpu_ids=self.gpu_ids)
 
         self.net_decoder_skin_image = networks.define_decoder_mask_image(longsize=256, norm=opt.norm, gpu_ids=self.gpu_ids)
         self.net_decoder_hair_image = networks.define_decoder_mask_image(longsize=256, norm=opt.norm, gpu_ids=self.gpu_ids)
         self.net_decoder_left_eye_image = networks.define_decoder_mask_image(longsize=32, norm=opt.norm, gpu_ids=self.gpu_ids)
         self.net_decoder_right_eye_image = networks.define_decoder_mask_image(longsize=32, norm=opt.norm, gpu_ids=self.gpu_ids)
         self.net_decoder_mouth_image = networks.define_decoder_mask_image(longsize=80, norm=opt.norm, gpu_ids=self.gpu_ids)
-        self.net_decoder_nose_image = networks.define_decoder_mask_image(longsize=80, norm=opt.norm, gpu_ids=self.gpu_ids)
+        self.net_decoder_nose_image = networks.define_decoder_mask_image(longsize=30, norm=opt.norm, gpu_ids=self.gpu_ids)
 
         if self.opt.verbose:
                 print('---------- Networks initialized -------------')
@@ -353,7 +353,7 @@ class Pix2PixHD_mask_Model(BaseModel):
         for batch_index in range(0,label.size()[0]):
             mask4_image[batch_index] = real_image[batch_index,:,int(mask_list[batch_index][0])-16:int(mask_list[batch_index][0])+16,int(mask_list[batch_index][1])-24:int(mask_list[batch_index][1])+24]
             mask5_image[batch_index] = real_image[batch_index,:,int(mask_list[batch_index][2])-16:int(mask_list[batch_index][2])+16,int(mask_list[batch_index][3])-24:int(mask_list[batch_index][3])+24]
-            mask_nose_image[batch_index] = real_image[batch_index,:,int(mask_list[batch_index][6])-35:int(mask_list[batch_index][6])+35,int(mask_list[batch_index][7])-15:int(mask_list[batch_index][7])+15]
+            mask_nose_image[batch_index] = real_image[batch_index,:,int(mask_list[batch_index][6])-36:int(mask_list[batch_index][6])+36,int(mask_list[batch_index][7])-16:int(mask_list[batch_index][7])+16]
             
             mask_mouth_image[batch_index] = real_image[batch_index,:,int(mask_list[batch_index][4])-40:int(mask_list[batch_index][4])+40,int(mask_list[batch_index][5])-72:int(mask_list[batch_index][5])+72]
             mask_mouth[batch_index] = mask_mouth_whole[batch_index,:,int(mask_list[batch_index][4])-40:int(mask_list[batch_index][4])+40,int(mask_list[batch_index][5])-72:int(mask_list[batch_index][5])+72]
@@ -497,7 +497,7 @@ class Pix2PixHD_mask_Model(BaseModel):
             try:
                 reorder_left_eye_tensor[batch_index,:,int(mask_list[batch_index][0]/4+0.5)-4:int(mask_list[batch_index][0]/4+0.5)+4,int(mask_list[batch_index][1]/4+0.5)-6:int(mask_list[batch_index][1]/4+0.5)+6] += reorder_decode_embed_feature4[batch_index]
                 reorder_right_eye_tensor[batch_index,:,int(mask_list[batch_index][2]/4+0.5)-4:int(mask_list[batch_index][2]/4+0.5)+4,int(mask_list[batch_index][3]/4+0.5)-6:int(mask_list[batch_index][3]/4+0.5)+6] += reorder_decode_embed_feature5[batch_index]
-                reorder_nose_tensor[batch_index,:,int(mask_list[batch_index][2]/4+0.5)-17:int(mask_list[batch_index][2]/4+0.5)+17,int(mask_list[batch_index][3]/4+0.5)-7:int(mask_list[batch_index][3]/4+0.5)+7] += reorder_decode_embed_feature_nose[batch_index]
+                reorder_nose_tensor[batch_index,:,int(mask_list[batch_index][2]/4+0.5)-9:int(mask_list[batch_index][2]/4+0.5)+9,int(mask_list[batch_index][3]/4+0.5)-4:int(mask_list[batch_index][3]/4+0.5)+4] += reorder_decode_embed_feature_nose[batch_index]
                 reorder_mouth_tensor[batch_index,:,int(mask_list[batch_index][4]/4+0.5)-10:int(mask_list[batch_index][4]/4+0.5)+10,int(mask_list[batch_index][5]/4+0.5)-18:int(mask_list[batch_index][5]/4+0.5)+18] += reorder_decode_embed_feature_mouth[batch_index]
             except:
                 print("wrong0 ! ")
@@ -533,7 +533,7 @@ class Pix2PixHD_mask_Model(BaseModel):
         for batch_index in range(0,label.size()[0]):
             try:
                 left_eye_tensor[batch_index,:,int(mask_list[batch_index][0]/4+0.5)-4:int(mask_list[batch_index][0]/4+0.5)+4,int(mask_list[batch_index][1]/4+0.5)-6:int(mask_list[batch_index][1]/4+0.5)+6] += decode_embed_feature4[batch_index]
-                nose_tensor[batch_index,:,int(mask_list[batch_index][0]/4+0.5)-17:int(mask_list[batch_index][0]/4+0.5)+17,int(mask_list[batch_index][1]/4+0.5)-7:int(mask_list[batch_index][1]/4+0.5)+7] += decode_embed_feature_nose[batch_index]
+                nose_tensor[batch_index,:,int(mask_list[batch_index][0]/4+0.5)-9:int(mask_list[batch_index][0]/4+0.5)+9,int(mask_list[batch_index][1]/4+0.5)-4:int(mask_list[batch_index][1]/4+0.5)+4] += decode_embed_feature_nose[batch_index]
                 right_eye_tensor[batch_index,:,int(mask_list[batch_index][2]/4+0.5)-4:int(mask_list[batch_index][2]/4+0.5)+4,int(mask_list[batch_index][3]/4+0.5)-6:int(mask_list[batch_index][3]/4+0.5)+6] += decode_embed_feature5[batch_index]
                 mouth_tensor[batch_index,:,int(mask_list[batch_index][4]/4+0.5)-10:int(mask_list[batch_index][4]/4+0.5)+10,int(mask_list[batch_index][5]/4+0.5)-18:int(mask_list[batch_index][5]/4+0.5)+18] += decode_embed_feature_mouth[batch_index]
             except:

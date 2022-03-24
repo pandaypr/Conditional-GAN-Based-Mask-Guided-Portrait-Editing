@@ -201,8 +201,8 @@ class AlignedDataset(BaseDataset):
             y_mean = int((this_top+this_bottom)/2)
             mask_tensor[6] = y_mean
             mask_tensor[7] = x_mean
-            assert 35<mask_tensor[6]<256-35
-            assert 15<mask_tensor[7]<256-15
+            assert 36<mask_tensor[6]<256-36
+            assert 16<mask_tensor[7]<256-16
 
         except:
             mask_tensor[6] = 150
