@@ -149,7 +149,7 @@ for epoch in range(start_epoch, opt.niter + opt.niter_decay + 1):
         # model.module.optimizer_D2.step()
 
         if opt.debug_mask_part == True:
-            losses, reconstruct, left_eye_reconstruct, right_eye_reconstruct, skin_reconstruct, hair_reconstruct, mouth_reconstruct, transfer_image, transfer_label = model( Variable(data['bg_image']), Variable(data['label']), Variable(data['inst']), Variable(data['image']), Variable(data['feat']), Variable(data['image_affine']), Variable(data['mask']), Variable(data['ori_label']), infer=save_fake, type="vae_net")
+            losses, reconstruct, left_eye_reconstruct, right_eye_reconstruct, skin_reconstruct, hair_reconstruct, mouth_reconstruct, transfer_image, transfer_label, nose_reconstruct = model( Variable(data['bg_image']), Variable(data['label']), Variable(data['inst']), Variable(data['image']), Variable(data['feat']), Variable(data['image_affine']), Variable(data['mask']), Variable(data['ori_label']), infer=save_fake, type="vae_net")
         else:
             losses, reconstruct, real_parsing_label = model(Variable(data['label']), Variable(data['inst']), Variable(data['image']), Variable(data['feat']), Variable(data['image_affine']), infer=save_fake, type="vae_net")
 

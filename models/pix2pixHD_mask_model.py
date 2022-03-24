@@ -92,18 +92,21 @@ class Pix2PixHD_mask_Model(BaseModel):
         self.net_encoder_left_eye = networks.define_encoder_mask(longsize=32, norm=opt.norm, gpu_ids=self.gpu_ids)
         self.net_encoder_right_eye = networks.define_encoder_mask(longsize=32, norm=opt.norm, gpu_ids=self.gpu_ids)
         self.net_encoder_mouth = networks.define_encoder_mask(longsize=80, norm=opt.norm, gpu_ids=self.gpu_ids)
+        self.net_encoder_nose = networks.define_encoder_mask(longsize=80, norm=opt.norm, gpu_ids=self.gpu_ids)
 
         self.net_decoder_skin = networks.define_decoder_mask(longsize=256, norm=opt.norm, gpu_ids=self.gpu_ids)
         self.net_decoder_hair = networks.define_decoder_mask(longsize=256, norm=opt.norm, gpu_ids=self.gpu_ids)
         self.net_decoder_left_eye = networks.define_decoder_mask(longsize=32, norm=opt.norm, gpu_ids=self.gpu_ids)
         self.net_decoder_right_eye = networks.define_decoder_mask(longsize=32, norm=opt.norm, gpu_ids=self.gpu_ids)
         self.net_decoder_mouth = networks.define_decoder_mask(longsize=80, norm=opt.norm, gpu_ids=self.gpu_ids)
+        self.net_decoder_nose = networks.define_decoder_mask(longsize=80, norm=opt.norm, gpu_ids=self.gpu_ids)
 
         self.net_decoder_skin_image = networks.define_decoder_mask_image(longsize=256, norm=opt.norm, gpu_ids=self.gpu_ids)
         self.net_decoder_hair_image = networks.define_decoder_mask_image(longsize=256, norm=opt.norm, gpu_ids=self.gpu_ids)
         self.net_decoder_left_eye_image = networks.define_decoder_mask_image(longsize=32, norm=opt.norm, gpu_ids=self.gpu_ids)
         self.net_decoder_right_eye_image = networks.define_decoder_mask_image(longsize=32, norm=opt.norm, gpu_ids=self.gpu_ids)
         self.net_decoder_mouth_image = networks.define_decoder_mask_image(longsize=80, norm=opt.norm, gpu_ids=self.gpu_ids)
+        self.net_decoder_nose_image = networks.define_decoder_mask_image(longsize=80, norm=opt.norm, gpu_ids=self.gpu_ids)
 
         if self.opt.verbose:
                 print('---------- Networks initialized -------------')
@@ -119,19 +122,22 @@ class Pix2PixHD_mask_Model(BaseModel):
             self.load_network(self.net_encoder_hair, 'encoder_hair', opt.which_epoch, pretrained_path)            
             self.load_network(self.net_encoder_left_eye, 'encoder_left_eye', opt.which_epoch, pretrained_path)            
             self.load_network(self.net_encoder_right_eye, 'encoder_right_eye', opt.which_epoch, pretrained_path)          
-            self.load_network(self.net_encoder_mouth, 'encoder_mouth', opt.which_epoch, pretrained_path)            
+            self.load_network(self.net_encoder_mouth, 'encoder_mouth', opt.which_epoch, pretrained_path)
+            self.load_network(self.net_encoder_nose, 'encoder_mouth', opt.which_epoch, pretrained_path)            
 
             self.load_network(self.net_decoder_skin, 'decoder_skin', opt.which_epoch, pretrained_path)            
             self.load_network(self.net_decoder_hair, 'decoder_hair', opt.which_epoch, pretrained_path)            
             self.load_network(self.net_decoder_left_eye, 'decoder_left_eye', opt.which_epoch, pretrained_path)            
             self.load_network(self.net_decoder_right_eye, 'decoder_right_eye', opt.which_epoch, pretrained_path)          
-            self.load_network(self.net_decoder_mouth, 'decoder_mouth', opt.which_epoch, pretrained_path)            
+            self.load_network(self.net_decoder_mouth, 'decoder_mouth', opt.which_epoch, pretrained_path)   
+            self.load_network(self.net_decoder_nose, 'decoder_mouth', opt.which_epoch, pretrained_path)            
 
             self.load_network(self.net_decoder_skin_image, 'decoder_skin_image', opt.which_epoch, pretrained_path)            
             self.load_network(self.net_decoder_hair_image, 'decoder_hair_image', opt.which_epoch, pretrained_path)            
             self.load_network(self.net_decoder_left_eye_image, 'decoder_left_eye_image', opt.which_epoch, pretrained_path)            
             self.load_network(self.net_decoder_right_eye_image, 'decoder_right_eye_image', opt.which_epoch, pretrained_path)
             self.load_network(self.net_decoder_mouth_image, 'decoder_mouth_image', opt.which_epoch, pretrained_path)
+            self.load_network(self.net_decoder_mouth_nose, 'decoder_mouth_image', opt.which_epoch, pretrained_path)
             self.load_network(self.netP, 'P', opt.which_epoch, pretrained_path)
             if self.isTrain:
                 self.load_network(self.netD, 'D', opt.which_epoch, pretrained_path)  
@@ -166,9 +172,9 @@ class Pix2PixHD_mask_Model(BaseModel):
             # params = list(self.netP.parameters())
             # self.optimizer_netP = torch.optim.Adam(params, lr=opt.lr, betas=(opt.beta1, 0.999))
 
-            params_decoder = list(self.net_decoder_skin.parameters()) + list(self.net_decoder_hair.parameters()) + list(self.net_decoder_left_eye.parameters()) + list(self.net_decoder_right_eye.parameters()) + list(self.net_decoder_mouth.parameters())
-            params_image_decoder = list(self.net_decoder_skin_image.parameters()) + list(self.net_decoder_hair_image.parameters()) + list(self.net_decoder_left_eye_image.parameters()) + list(self.net_decoder_right_eye_image.parameters()) + list(self.net_decoder_mouth_image.parameters())
-            params_encoder = list(self.net_encoder_skin.parameters()) + list(self.net_encoder_hair.parameters()) + list(self.net_encoder_left_eye.parameters()) + list(self.net_encoder_right_eye.parameters()) + list(self.net_encoder_mouth.parameters())
+            params_decoder = list(self.net_decoder_skin.parameters()) + list(self.net_decoder_hair.parameters()) + list(self.net_decoder_left_eye.parameters()) + list(self.net_decoder_right_eye.parameters()) + list(self.net_decoder_mouth.parameters()) + list(self.net_decoder_nose.parameters())
+            params_image_decoder = list(self.net_decoder_skin_image.parameters()) + list(self.net_decoder_hair_image.parameters()) + list(self.net_decoder_left_eye_image.parameters()) + list(self.net_decoder_right_eye_image.parameters()) + list(self.net_decoder_mouth_image.parameters())+ list(self.net_decoder_nose_image.parameters())
+            params_encoder = list(self.net_encoder_skin.parameters()) + list(self.net_encoder_hair.parameters()) + list(self.net_encoder_left_eye.parameters()) + list(self.net_encoder_right_eye.parameters()) + list(self.net_encoder_mouth.parameters())+ list(self.net_encoder_nose.parameters())
 
             # self.optimizer_mask_autoencoder = torch.optim.Adam(params_encoder + params_image_decoder, lr=opt.lr, betas=(opt.beta1, 0.999))
 
@@ -330,8 +336,9 @@ class Pix2PixHD_mask_Model(BaseModel):
         # start
 
         mask4_image = torch.zeros(label.size()[0],3,32,48).cuda()
-        mask5_image = torch.zeros(label.size()[0],3,32,48).cuda()
-        mask_mouth_image = torch.zeros(label.size()[0],3,80,144).cuda()
+        mask5_image = torch.zeros(label.size()[0],3,32,48).cuda()   #H=32, W=48
+        mask_nose_image = torch.zeros(label.size()[0],3,70,30).cuda()   #W=30, H=70
+        mask_mouth_image = torch.zeros(label.size()[0],3,80,144).cuda()   #W=144, H=80
         mask_mouth = torch.zeros(label.size()[0],3,80,144).cuda()
 
 
@@ -346,10 +353,14 @@ class Pix2PixHD_mask_Model(BaseModel):
         for batch_index in range(0,label.size()[0]):
             mask4_image[batch_index] = real_image[batch_index,:,int(mask_list[batch_index][0])-16:int(mask_list[batch_index][0])+16,int(mask_list[batch_index][1])-24:int(mask_list[batch_index][1])+24]
             mask5_image[batch_index] = real_image[batch_index,:,int(mask_list[batch_index][2])-16:int(mask_list[batch_index][2])+16,int(mask_list[batch_index][3])-24:int(mask_list[batch_index][3])+24]
-            mask_mouth_image[batch_index] = real_image[batch_index,:,int(mask_list[batch_index][4])-40:int(mask_list[batch_index][4])+40,int(mask_list[batch_index][5])-72:int(mask_list[batch_index][5])+72]
+            mask_nose_image[batch_index] = real_image[batch_index,:,int(mask_list[batch_index][6])-35:int(mask_list[batch_index][6])+35,int(mask_list[batch_index][7])-15:int(mask_list[batch_index][7])+15]
             
+            mask_mouth_image[batch_index] = real_image[batch_index,:,int(mask_list[batch_index][4])-40:int(mask_list[batch_index][4])+40,int(mask_list[batch_index][5])-72:int(mask_list[batch_index][5])+72]
             mask_mouth[batch_index] = mask_mouth_whole[batch_index,:,int(mask_list[batch_index][4])-40:int(mask_list[batch_index][4])+40,int(mask_list[batch_index][5])-72:int(mask_list[batch_index][5])+72]
-
+        
+        mask_skin_pic = mask_nose_image[0,:,:,:].cpu()
+        mask_skin_pic= transforms.functional.to_pil_image(mask_skin_pic)   
+        mask_skin_pic.save('LeftEye.png')
         # use masked mouth region
         mask_mouth_image = mask_mouth * mask_mouth_image
         #print('input_label[:,8,:,:]',input_label[:,8:9,:,:].shape)
@@ -368,14 +379,15 @@ class Pix2PixHD_mask_Model(BaseModel):
         '''mask_skin_pic = input_label[1,4:5,:,:].cpu()
         mask_skin_pic= transforms.functional.to_pil_image(mask_skin_pic)   
         mask_skin_pic.save('LeftEye.png')'''
-        combinedLabel_mask=torch.cat((BG_mask,NO_mask),1)
-        combinedLabel = self.netG.forward(torch.cat((BG_mask,NO_mask),1),type="combined_model") #Background and Nose encoder
+        #combinedLabel_mask=torch.cat((BG_mask,NO_mask),1)
+        encode_label_feature_BG = self.netG.forward(BG_mask,type="label_encoder") #Background encoder
+        encode_label_feature_NO = self.netG.forward(NO_mask,type="label_encoder") #Background encoder
         encode_label_feature = self.netG.forward(SK_mask,type="label_encoder")                  #Skin Mask Encoder
         encode_label_feature_LE = self.netG.forward(torch.cat((LB_mask,LE_mask),1),type="combined_model") #Left Eye Encoder
         encode_label_feature_RE = self.netG.forward(torch.cat((RB_mask,RE_mask),1),type="combined_model") #Right Eye Encoder
         encode_label_feature_MO = self.netG.forward(torch.cat((UL_mask,LL_mask,MO_mask),1),type="Tri_Model") #Mouth Encoder
         encode_label_feature_HA = self.netG.forward(HA_mask,type="label_encoder") #Hair Encoder
-        mask_skin_pic = combinedLabel_mask[0,1,:,:].cpu()
+        mask_skin_pic = encode_label_feature_NO[0,1,:,:].cpu()
         mask_skin_pic= transforms.functional.to_pil_image(mask_skin_pic)   
         mask_skin_pic.save('input_label.png')
 
@@ -399,7 +411,16 @@ class Pix2PixHD_mask_Model(BaseModel):
         loss_mask_image += self.criterionL2(reconstruce_mask4_image, mask4_image.detach()) * 10 
         loss_KL += loss_KL4
         decode_embed_feature4 = self.net_decoder_left_eye(correct_sample4)
-
+        
+        mus_nose, log_variances_nose = self.net_encoder_nose(mask_nose_image)
+        variances_nose = torch.exp(log_variances_nose * 0.5)
+        random_sample_nose = Variable(torch.randn(mus_nose.size()).cuda(), requires_grad=True)
+        correct_sample_nose = random_sample_nose * variances_nose + mus_nose
+        loss_KL_nose = -0.5*torch.sum(-log_variances_nose.exp() - torch.pow(mus_nose,2) + log_variances_nose + 1)
+        reconstruce_mask_nose_image = self.net_decoder_nose_image(correct_sample_nose)
+        loss_mask_image += self.criterionL2(reconstruce_mask_nose_image, mask_nose_image.detach()) * 10 
+        loss_KL += loss_KL_nose
+        decode_embed_feature_nose = self.net_decoder_nose(correct_sample_nose)
 
         mus5, log_variances5 = self.net_encoder_right_eye(mask5_image)
         variances5 = torch.exp(log_variances5 * 0.5)
@@ -451,6 +472,7 @@ class Pix2PixHD_mask_Model(BaseModel):
         left_eye_tensor = torch.zeros(encode_label_feature.size()).cuda()
         right_eye_tensor = torch.zeros(encode_label_feature.size()).cuda()
         mouth_tensor = torch.zeros(encode_label_feature.size()).cuda()
+        nose_tensor = torch.zeros(encode_label_feature.size()).cuda()
 
 
 
@@ -459,25 +481,28 @@ class Pix2PixHD_mask_Model(BaseModel):
         reorder_left_eye_tensor = torch.zeros(encode_label_feature.size()).cuda()
         reorder_right_eye_tensor = torch.zeros(encode_label_feature.size()).cuda()
         reorder_mouth_tensor = torch.zeros(encode_label_feature.size()).cuda()
+        reorder_nose_tensor = torch.zeros(encode_label_feature.size()).cuda()
 
 
         new_order = torch.randperm(label.size()[0])
 
         reorder_decode_embed_feature4 = decode_embed_feature4[new_order]
         reorder_decode_embed_feature5 = decode_embed_feature5[new_order]
+        reorder_decode_embed_feature_nose = decode_embed_feature_nose[new_order]
         reorder_decode_embed_feature_mouth = decode_embed_feature_mouth[new_order]
         reorder_decode_embed_feature_skin = decode_embed_feature_skin[new_order]
         reorder_decode_embed_feature_hair = decode_embed_feature_hair[new_order]
-
+                #35/4  15/4
         for batch_index in range(0,label.size()[0]):
             try:
                 reorder_left_eye_tensor[batch_index,:,int(mask_list[batch_index][0]/4+0.5)-4:int(mask_list[batch_index][0]/4+0.5)+4,int(mask_list[batch_index][1]/4+0.5)-6:int(mask_list[batch_index][1]/4+0.5)+6] += reorder_decode_embed_feature4[batch_index]
                 reorder_right_eye_tensor[batch_index,:,int(mask_list[batch_index][2]/4+0.5)-4:int(mask_list[batch_index][2]/4+0.5)+4,int(mask_list[batch_index][3]/4+0.5)-6:int(mask_list[batch_index][3]/4+0.5)+6] += reorder_decode_embed_feature5[batch_index]
+                reorder_nose_tensor[batch_index,:,int(mask_list[batch_index][2]/4+0.5)-17:int(mask_list[batch_index][2]/4+0.5)+17,int(mask_list[batch_index][3]/4+0.5)-7:int(mask_list[batch_index][3]/4+0.5)+7] += reorder_decode_embed_feature_nose[batch_index]
                 reorder_mouth_tensor[batch_index,:,int(mask_list[batch_index][4]/4+0.5)-10:int(mask_list[batch_index][4]/4+0.5)+10,int(mask_list[batch_index][5]/4+0.5)-18:int(mask_list[batch_index][5]/4+0.5)+18] += reorder_decode_embed_feature_mouth[batch_index]
             except:
                 print("wrong0 ! ")
 
-        reconstruct_transfer_face = self.netG.forward(torch.cat((combinedLabel,encode_label_feature,encode_label_feature_LE,encode_label_feature_RE,encode_label_feature_MO,encode_label_feature_HA,reorder_left_eye_tensor,reorder_right_eye_tensor,reorder_decode_embed_feature_skin,reorder_decode_embed_feature_hair,reorder_mouth_tensor),1),type="image_G")
+        reconstruct_transfer_face = self.netG.forward(torch.cat((encode_label_feature_BG,encode_label_feature,encode_label_feature_NO,encode_label_feature_LE,encode_label_feature_RE,encode_label_feature_MO,encode_label_feature_HA,reorder_left_eye_tensor,reorder_right_eye_tensor,reorder_nose_tensor,reorder_decode_embed_feature_skin,reorder_decode_embed_feature_hair,reorder_mouth_tensor),1),type="image_G")
 
         reconstruct_transfer_image = self.netG.forward(torch.cat((reconstruct_transfer_face,mask_bg_feature),1),type="bg_decoder")
 
@@ -508,6 +533,7 @@ class Pix2PixHD_mask_Model(BaseModel):
         for batch_index in range(0,label.size()[0]):
             try:
                 left_eye_tensor[batch_index,:,int(mask_list[batch_index][0]/4+0.5)-4:int(mask_list[batch_index][0]/4+0.5)+4,int(mask_list[batch_index][1]/4+0.5)-6:int(mask_list[batch_index][1]/4+0.5)+6] += decode_embed_feature4[batch_index]
+                nose_tensor[batch_index,:,int(mask_list[batch_index][0]/4+0.5)-17:int(mask_list[batch_index][0]/4+0.5)+17,int(mask_list[batch_index][1]/4+0.5)-7:int(mask_list[batch_index][1]/4+0.5)+7] += decode_embed_feature_nose[batch_index]
                 right_eye_tensor[batch_index,:,int(mask_list[batch_index][2]/4+0.5)-4:int(mask_list[batch_index][2]/4+0.5)+4,int(mask_list[batch_index][3]/4+0.5)-6:int(mask_list[batch_index][3]/4+0.5)+6] += decode_embed_feature5[batch_index]
                 mouth_tensor[batch_index,:,int(mask_list[batch_index][4]/4+0.5)-10:int(mask_list[batch_index][4]/4+0.5)+10,int(mask_list[batch_index][5]/4+0.5)-18:int(mask_list[batch_index][5]/4+0.5)+18] += decode_embed_feature_mouth[batch_index]
             except:
@@ -515,7 +541,7 @@ class Pix2PixHD_mask_Model(BaseModel):
 
         # loss_KL4 = -0.5*torch.sum(-log_variances4.exp() - torch.pow(mus4,2) + log_variances4 + 1, 1)
 
-        reconstruct_face = self.netG.forward(torch.cat((combinedLabel,encode_label_feature,encode_label_feature_LE,encode_label_feature_RE,encode_label_feature_MO,encode_label_feature_HA,left_eye_tensor,right_eye_tensor,decode_embed_feature_skin,decode_embed_feature_hair,mouth_tensor),1),type="image_G")
+        reconstruct_face = self.netG.forward(torch.cat((encode_label_feature_BG,encode_label_feature,encode_label_feature_LE,encode_label_feature_RE,encode_label_feature_MO,encode_label_feature_HA,left_eye_tensor,right_eye_tensor,nose_tensor,decode_embed_feature_skin,decode_embed_feature_hair,mouth_tensor),1),type="image_G")
 
         reconstruct_image = self.netG.forward(torch.cat((reconstruct_face,mask_bg_feature),1),type="bg_decoder")        
 
@@ -524,12 +550,14 @@ class Pix2PixHD_mask_Model(BaseModel):
 
         mask_left_eye = (label==4).type(torch.cuda.FloatTensor)
         mask_right_eye = (label==5).type(torch.cuda.FloatTensor)
+        mask_nose = (label==6).type(torch.cuda.FloatTensor)
         mask_mouth = ((label==7)+(label==8)+(label==9)).type(torch.cuda.FloatTensor)
 
         loss_L2_image = 0
         for batch_index in range(0,label.size()[0]):
             loss_L2_image += self.criterionL2( mask_left_eye*reconstruct_image, mask_left_eye*real_image) * 10 
             loss_L2_image += self.criterionL2( mask_right_eye*reconstruct_image, mask_right_eye*real_image) * 10 
+            loss_L2_image += self.criterionL2( mask_nose*reconstruct_image, mask_nose*real_image) * 10 
             loss_L2_image += self.criterionL2( mask_skin*reconstruct_image, mask_skin*real_image) * 5 
             loss_L2_image += self.criterionL2( mask_hair*reconstruct_image, mask_hair*real_image) * 5
             loss_L2_image += self.criterionL2( mask_mouth*reconstruct_image, mask_mouth*real_image) * 10 
@@ -564,7 +592,7 @@ class Pix2PixHD_mask_Model(BaseModel):
                     loss_G_GAN_Feat += D_weights * feat_weights * \
                         self.criterionFeat(pred_fake[i][j], pred_real[i][j].detach()) * self.opt.lambda_feat
         
-        all_mask_tensor = torch.cat((mask_left_eye,mask_right_eye,mask_skin,mask_hair,mask_mouth),1)
+        all_mask_tensor = torch.cat((mask_left_eye,mask_right_eye,mask_nose,mask_skin,mask_hair,mask_mouth),1)
         # mask_weight_tensor = torch.zeros(5)
         # mask_weight_tensor[0] = 10
         # mask_weight_tensor[1] = 10
@@ -578,7 +606,7 @@ class Pix2PixHD_mask_Model(BaseModel):
             loss_G_VGG += self.criterionVGG(reconstruct_image, real_image, all_mask_tensor, mask_weights = mask_weight_list) * self.opt.lambda_feat * 3
             # loss_G_VGG += self.criterionVGG(reconstruct_image, real_image, mask4, weights = [1.0/4,1.0/4,1.0/4,1.0/8,1.0/8]) * self.opt.lambda_feat * 10
             
-        return self.loss_filter( loss_KL,loss_mask_image,loss_G_GAN, loss_G_GAN_Feat, loss_G_VGG, loss_D_real, loss_D_fake, loss_L2_image, loss_parsing, loss_G2_GAN, loss_D2_real, loss_D2_fake), None if not infer else reconstruct_image, None if not infer else reconstruce_mask4_image, None if not infer else reconstruce_mask5_image, None if not infer else reconstruce_mask_skin_image, None if not infer else reconstruce_mask_hair_image, None if not infer else reconstruce_mask_mouth_image, None if not infer else reconstruct_transfer_image, None if not infer else parsing_label
+        return self.loss_filter( loss_KL,loss_mask_image,loss_G_GAN, loss_G_GAN_Feat, loss_G_VGG, loss_D_real, loss_D_fake, loss_L2_image, loss_parsing, loss_G2_GAN, loss_D2_real, loss_D2_fake), None if not infer else reconstruct_image, None if not infer else reconstruce_mask4_image, None if not infer else reconstruce_mask5_image, None if not infer else reconstruce_mask_skin_image, None if not infer else reconstruce_mask_hair_image, None if not infer else reconstruce_mask_mouth_image, None if not infer else reconstruct_transfer_image, None if not infer else parsing_label, None if not infer else reconstruce_mask_nose_image
         
     def inference(self, bg_contentimage, label2, mask2_list, image, label, mask_list):
 

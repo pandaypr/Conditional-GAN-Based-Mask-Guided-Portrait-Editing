@@ -126,10 +126,11 @@ class AlignedDataset(BaseDataset):
         A_tensor = transforms.functional.to_tensor(A) * 255.0
 
 
-        mask_tensor = torch.zeros(6)
+        mask_tensor = torch.zeros(8)
 
         try:
             mask_left_eye_r = torch.nonzero(A_tensor==4)
+
             this_top = int(torch.min(mask_left_eye_r,0)[0][1])
             this_left = int(torch.min(mask_left_eye_r,0)[0][2])
             this_bottom = int(torch.max(mask_left_eye_r,0)[0][1])
@@ -138,13 +139,14 @@ class AlignedDataset(BaseDataset):
             y_mean = int((this_top+this_bottom)/2)
             mask_tensor[0] = y_mean
             mask_tensor[1] = x_mean
+            assert 16<mask_tensor[0]<256-16   #Height
+            assert 24<mask_tensor[1]<256-24   #Width
             # mask_list.append(x_mean)
             # mask_list.append(y_mean)
         except:
-            print("left eye problem ------------------")
-            print(A_path)
             mask_tensor[0] = 116
             mask_tensor[1] = 96
+            print("left eye problem ------------------",'index of faulty image:',index, 'Path:',A_path)
             # mask_list.append(116)
             # mask_list.append(96)
 
@@ -158,14 +160,14 @@ class AlignedDataset(BaseDataset):
             y_mean = int((this_top+this_bottom)/2)
             mask_tensor[2] = y_mean
             mask_tensor[3] = x_mean
+            assert 16<mask_tensor[2]<256-16
+            assert 24<mask_tensor[3]<256-24
             # mask_list.append(x_mean)
             # mask_list.append(y_mean)
         except:
-            print("right eye problem --------------")
-            print(A_path)
             mask_tensor[2] = 116
             mask_tensor[3] = 160
-
+            print("right eye problem --------------",'index of faulty image:',index, 'Path:',A_path)
             # mask_list.append(116)
             # mask_list.append(160)
 
@@ -179,22 +181,43 @@ class AlignedDataset(BaseDataset):
             y_mean = int((this_top+this_bottom)/2)
             mask_tensor[4] = y_mean
             mask_tensor[5] = x_mean
+            assert 40<mask_tensor[4]<256-40
+            assert 72<mask_tensor[5]<256-72
 
         except:
-            print("mouth problem --------------")
-            print(A_path)
             mask_tensor[4] = 184
             mask_tensor[5] = 128
+            print("mouth problem --------------",'index of faulty image:',index, 'Path:',A_path)
+
+            # mask_list.append(184) # or 180
+            # mask_list.append(128)
+        try:
+            mask_mouth_r = torch.nonzero(A_tensor==6)
+            this_top = int(torch.min(mask_mouth_r,0)[0][1])
+            this_left = int(torch.min(mask_mouth_r,0)[0][2])
+            this_bottom = int(torch.max(mask_mouth_r,0)[0][1])
+            this_right = int(torch.max(mask_mouth_r,0)[0][2])
+            x_mean = int((this_left+this_right)/2)
+            y_mean = int((this_top+this_bottom)/2)
+            mask_tensor[6] = y_mean
+            mask_tensor[7] = x_mean
+            assert 35<mask_tensor[6]<256-35
+            assert 15<mask_tensor[7]<256-15
+
+        except:
+            mask_tensor[6] = 150
+            mask_tensor[7] = 125
+            print("Nose problem --------------",'index of faulty image:',index, 'Path:',A_path)
 
             # mask_list.append(184) # or 180
             # mask_list.append(128)
 
-        assert 16<mask_tensor[0]<256-16
+        '''assert 16<mask_tensor[0]<256-16
         assert 24<mask_tensor[1]<256-24
         assert 16<mask_tensor[2]<256-16
         assert 24<mask_tensor[3]<256-24
         assert 40<mask_tensor[4]<256-40
-        assert 72<mask_tensor[5]<256-72
+        assert 72<mask_tensor[5]<256-72'''
 
         # A_tensor = transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))(A_tensor) * 255.0
         inst_tensor = feat_tensor = 0
@@ -310,12 +333,32 @@ class AlignedDataset(BaseDataset):
                 # mask_list.append(184) # or 180
                 # mask_list.append(128)
 
+            try:
+                mask_mouth_r = torch.nonzero(A_tensor==6)
+                this_top = int(torch.min(mask_mouth_r,0)[0][1])
+                this_left = int(torch.min(mask_mouth_r,0)[0][2])
+                this_bottom = int(torch.max(mask_mouth_r,0)[0][1])
+                this_right = int(torch.max(mask_mouth_r,0)[0][2])
+                x_mean = int((this_left+this_right)/2)
+                y_mean = int((this_top+this_bottom)/2)
+                mask_tensor[6] = y_mean
+                mask_tensor[7] = x_mean
+                assert 35<mask_tensor[6]<256-35
+                assert 15<mask_tensor[7]<256-15
+
+            except:
+                mask_tensor[6] = 150
+                mask_tensor[7] = 125
+                print("Nose problem --------------",'index of faulty image:',index, 'Path:',A_path)
+
             assert 16<mask_tensor2[0]<256-16
             assert 24<mask_tensor2[1]<256-24
             assert 16<mask_tensor2[2]<256-16
             assert 24<mask_tensor2[3]<256-24
             assert 40<mask_tensor2[4]<256-40
             assert 72<mask_tensor2[5]<256-72
+            assert 35<mask_tensor2[6]<256-35
+            assert 15<mask_tensor2[7]<256-15
 
             mask_A_tensor = self.append_region(mask_A,mask_A_tensor,mask_tensor2)
             input_dict = {'label': A_tensor, 'inst': inst_tensor, 'image': B_tensor, 'mask2': mask_tensor2, 'bg_styleimage': real_B_tensor, 'bg_contentimage': real_mask_B_tensor,
@@ -334,9 +377,9 @@ class AlignedDataset(BaseDataset):
         label_scale = label.resize((new_w,new_h),Image.NEAREST)
 
         label_scale_tensor = transforms.functional.to_tensor(label_scale) * 255.0
-        mask_tensor_scale = torch.zeros(6)        
-        mask_tensor_diff = torch.zeros(6)
-        for index in range(6):
+        mask_tensor_scale = torch.zeros(8)        
+        mask_tensor_diff = torch.zeros(8)
+        for index in range(8):
             mask_tensor_scale[index] = int(1.1*mask_tensor[index])
             mask_tensor_diff[index] = int(mask_tensor_scale[index]-mask_tensor[index])
 
@@ -347,13 +390,17 @@ class AlignedDataset(BaseDataset):
         left_eye_mask_whole = label_scale_tensor[:,int(mask_tensor_diff[0]):int(mask_tensor_diff[0])+h,int(mask_tensor_diff[1]):int(mask_tensor_diff[1])+w]
         right_eye_mask_whole = label_scale_tensor[:,int(mask_tensor_diff[2]):int(mask_tensor_diff[2])+h,int(mask_tensor_diff[3]):int(mask_tensor_diff[3])+w]
         mouth_mask_whole = label_scale_tensor[:,int(mask_tensor_diff[4]):int(mask_tensor_diff[4])+h,int(mask_tensor_diff[5]):int(mask_tensor_diff[5])+w]
+        nose_mask_whole = label_scale_tensor[:,int(mask_tensor_diff[6]):int(mask_tensor_diff[6])+h,int(mask_tensor_diff[7]):int(mask_tensor_diff[7])+w]
 
         left_eye_mask = (left_eye_mask_whole==4).type(torch.FloatTensor)
         right_eye_mask = (right_eye_mask_whole==5).type(torch.FloatTensor)
         mouth_mask = ((mouth_mask_whole==7)+(mouth_mask_whole==8)+(mouth_mask_whole==9)).type(torch.FloatTensor)
+        nose_mask = (nose_mask_whole==6).type(torch.FloatTensor)
+
 
         face_label = left_eye_mask*left_eye_mask_whole + (1-left_eye_mask)*face_label
         face_label = right_eye_mask*right_eye_mask_whole + (1-right_eye_mask)*face_label
+        face_label = nose_mask*nose_mask_whole + (1-nose_mask)*face_label
         face_label = mouth_mask*mouth_mask_whole + (1-mouth_mask)*face_label
 
         return face_label

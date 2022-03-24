@@ -58,7 +58,7 @@ def define_D(input_nc, ndf, n_layers_D, norm='instance', use_sigmoid=False, num_
     netD.apply(weights_init)
     return netD
 
-def define_embed_G(input_nc, output_nc, ngf, netG, n_downsample_global=3, n_blocks_global=9, n_local_enhancers=1, 
+'''def define_embed_G(input_nc, output_nc, ngf, netG, n_downsample_global=3, n_blocks_global=9, n_local_enhancers=1, 
              n_blocks_local=3, norm='instance', embed_nc=128, gpu_ids=[]):
     ### by default netG is global, and we only implement global netG at the first time
     if netG == "global":
@@ -71,83 +71,9 @@ def define_embed_G(input_nc, output_nc, ngf, netG, n_downsample_global=3, n_bloc
         netG.cuda(gpu_ids[0])
     netG.apply(weights_init)
     return netG    
+'''
 
-def define_embed_bg_G(input_nc, output_nc, ngf, netG, n_downsample_global=3, n_blocks_global=9, n_local_enhancers=1, 
-             n_blocks_local=3, norm='instance', embed_nc=128, gpu_ids=[]):
-    ### by default netG is global, and we only implement global netG at the first time
-    if netG == "global":
-        netG = EmbedGlobalBGGenerator(input_nc, output_nc, ngf, n_downsample_global, n_blocks_global, norm, embed_nc)
-    else:
-        raise('embed_G has only implemented global embedG')
-    print(netG)
-    if len(gpu_ids) > 0:
-        assert(torch.cuda.is_available())   
-        netG.cuda(gpu_ids[0])
-    netG.apply(weights_init)
-    return netG
-
-class EmbedGlobalBGGenerator(nn.Module):
-    def __init__(self, input_nc, output_nc, ngf=64, n_downsampling=3, n_blocks=9, norm="batch", embed_nc=128,
-                 padding_type='reflect'):
-        norm_layer = get_norm_layer(norm_type=norm)
-        assert(n_blocks >= 0)
-        super(EmbedGlobalBGGenerator, self).__init__()
-        activation = nn.ReLU(True)        
-
-        downsample_model = [nn.ReflectionPad2d(3), nn.Conv2d(input_nc, ngf, kernel_size=7, padding=0), norm_layer(ngf), activation]
-        ### downsample
-        for i in range(n_downsampling):
-            mult = 2**i
-            if i != n_downsampling-1:
-                downsample_model += [nn.Conv2d(ngf * mult, ngf * mult * 2, kernel_size=3, stride=2, padding=1),
-                      norm_layer(ngf * mult * 2), activation]
-            else:
-                downsample_model += [nn.Conv2d(ngf * mult, ngf * mult * 2, kernel_size=3, stride=2, padding=1),
-                      norm_layer(ngf * mult * 2), activation]
-
-        self.downsample_model = nn.Sequential(*downsample_model)
-
-        ### resnet blocks
-        model=[]
-        model += [nn.Conv2d(in_channels=ngf*(2**n_downsampling)+embed_nc, out_channels=ngf*(2**n_downsampling), kernel_size=1, padding=0, stride=1, bias=True)]
-
-        mult = 2**n_downsampling
-        for i in range(n_blocks):
-            model += [ResnetBlock(ngf * mult, padding_type=padding_type, activation=activation, norm_layer=norm_layer)]
-        
-        ### upsample         
-        for i in range(n_downsampling):
-            mult = 2**(n_downsampling - i)
-            model += [nn.ConvTranspose2d(ngf * mult, int(ngf * mult / 2), kernel_size=4, stride=2, padding=1, output_padding=0),
-                       norm_layer(int(ngf * mult / 2)), activation]
-        # model += [nn.ReflectionPad2d(3), nn.Conv2d(ngf, output_nc, kernel_size=7, padding=0), nn.Tanh()]        
-        self.model = nn.Sequential(*model)
-        # self.compress_channel = nn.Sequential(
-        #     nn.Conv2d(in_channels=ngf*(2**n_downsampling)+embed_nc, out_channels=ngf*(2**n_downsampling), kernel_size=1, padding=0, stride=1, bias=False))
-
-        #define background encoder model
-        bg_encoder = [nn.ReflectionPad2d(3), nn.Conv2d(3, ngf, kernel_size=7, padding=0), norm_layer(ngf), activation]
-        self.bg_encoder = nn.Sequential(*bg_encoder)
-
-        bg_decoder = [nn.Conv2d(in_channels=ngf*2, out_channels=ngf, kernel_size=1, padding=0, stride=1, bias=True)]
-        bg_decoder += [nn.ReflectionPad2d(3), nn.Conv2d(ngf, output_nc, kernel_size=7, padding=0), nn.Tanh()]
-        self.bg_decoder = nn.Sequential(*bg_decoder)
-
-
-    def forward(self, input, type="label_encoder"):
-        if type=="label_encoder":
-            return self.downsample_model(input)
-        elif type=="image_G":
-            return self.model(input)
-        elif type=="bg_encoder":
-            return self.bg_encoder(input)
-        elif type=="bg_decoder":
-            # notice before bg_decoder, we should concate the feature map form G and bg_encoder
-            return self.bg_decoder(input)
-        else:
-            print("wrong type ! ")
-
-class EmbedGlobalGenerator(nn.Module):
+'''class EmbedGlobalGenerator(nn.Module):
     def __init__(self, input_nc, output_nc, ngf=64, n_downsampling=3, n_blocks=9, norm="batch", embed_nc=128,
                  padding_type='reflect'):
         norm_layer = get_norm_layer(norm_type=norm)
@@ -192,7 +118,90 @@ class EmbedGlobalGenerator(nn.Module):
         elif type=="image_G":
             return self.model(input)
         else:
+            print("wrong type ! ")'''
+            
+def define_embed_bg_G(input_nc, output_nc, ngf, netG, n_downsample_global=3, n_blocks_global=9, n_local_enhancers=1, 
+             n_blocks_local=3, norm='instance', embed_nc=128, gpu_ids=[]):
+    ### by default netG is global, and we only implement global netG at the first time
+    if netG == "global":
+        netG = EmbedGlobalBGGenerator(input_nc, output_nc, ngf, n_downsample_global, n_blocks_global, norm, embed_nc)
+    else:
+        raise('embed_G has only implemented global embedG')
+    print(netG)
+    if len(gpu_ids) > 0:
+        assert(torch.cuda.is_available())   
+        netG.cuda(gpu_ids[0])
+    netG.apply(weights_init)
+    return netG
+
+class EmbedGlobalBGGenerator(nn.Module):
+    def __init__(self, input_nc, output_nc, ngf=64, n_downsampling=3, n_blocks=9, norm="batch", embed_nc=128,
+                 padding_type='reflect'):
+        norm_layer = get_norm_layer(norm_type=norm)
+        assert(n_blocks >= 0)
+        super(EmbedGlobalBGGenerator, self).__init__()
+        activation = nn.ReLU(True)        
+
+        downsample_model = [nn.Conv2d(1, 128, kernel_size=7, stride=2, padding=3), norm_layer(128), activation]   #128*128*128
+        downsample_model += [nn.Conv2d(128, 256, kernel_size=3, stride=2, padding=1),norm_layer(256), activation]  #256*64*64
+        self.downsample_model = nn.Sequential(*downsample_model)
+
+        downsamplecombined_model = [nn.Conv2d(2, 128, kernel_size=7, stride=2, padding=3), norm_layer(128), activation]   #128*128*128
+        downsamplecombined_model += [nn.Conv2d(128, 256, kernel_size=3, stride=2, padding=1),norm_layer(256), activation]  #256*64*64
+        self.downsamplecombined_model = nn.Sequential(*downsamplecombined_model)
+
+        Three_model = [nn.Conv2d(3, 128, kernel_size=7, stride=2, padding=3), norm_layer(128), activation]   #128*128*128
+        Three_model += [nn.Conv2d(128, 256, kernel_size=3, stride=2, padding=1),norm_layer(256), activation]  #256*64*64
+        self.Three_model = nn.Sequential(*Three_model)
+
+        ### resnet blocks
+        model=[]
+        #print('NGF', ngf)
+        #print('ngf*(2**n_downsampling)+embed_nc',ngf*(2**n_downsampling)+embed_nc)  #1536::: embed_nc=1280(256*5)
+        #print('ngf*(2**n_downsampling)',ngf*(2**n_downsampling))
+        model += [nn.Conv2d(in_channels=ngf*(2**n_downsampling)+embed_nc, out_channels=ngf*(2**n_downsampling), kernel_size=1, padding=0, stride=1, bias=True)]
+
+        mult = 2**n_downsampling
+        #print('mult = 2**n_downsampling',2**n_downsampling)
+        for i in range(n_blocks):
+            model += [ResnetBlock(ngf * mult, padding_type=padding_type, activation=activation, norm_layer=norm_layer)]
+        
+        ### upsample         
+        for i in range(n_downsampling):
+            mult = 2**(n_downsampling - i)
+            model += [nn.ConvTranspose2d(ngf * mult, int(ngf * mult / 2), kernel_size=4, stride=2, padding=1, output_padding=0),
+                       norm_layer(int(ngf * mult / 2)), activation]
+        # model += [nn.ReflectionPad2d(3), nn.Conv2d(ngf, output_nc, kernel_size=7, padding=0), nn.Tanh()]        
+        self.model = nn.Sequential(*model)
+        # self.compress_channel = nn.Sequential(
+        #     nn.Conv2d(in_channels=ngf*(2**n_downsampling)+embed_nc, out_channels=ngf*(2**n_downsampling), kernel_size=1, padding=0, stride=1, bias=False))
+
+        #define background encoder model
+        bg_encoder = [nn.ReflectionPad2d(3), nn.Conv2d(3, ngf, kernel_size=7, padding=0), norm_layer(ngf), activation]
+        self.bg_encoder = nn.Sequential(*bg_encoder)
+
+        bg_decoder = [nn.Conv2d(in_channels=ngf*2, out_channels=ngf, kernel_size=1, padding=0, stride=1, bias=True)]
+        bg_decoder += [nn.ReflectionPad2d(3), nn.Conv2d(ngf, output_nc, kernel_size=7, padding=0), nn.Tanh()]
+        self.bg_decoder = nn.Sequential(*bg_decoder)
+
+
+    def forward(self, input, type="label_encoder"):
+        if type=="label_encoder":
+            return self.downsample_model(input)
+        elif type=="combined_model":
+            return self.downsamplecombined_model(input)
+        elif type == "Tri_Model":
+            return self.Three_model(input)
+        elif type=="image_G":
+            return self.model(input)
+        elif type=="bg_encoder":
+            return self.bg_encoder(input) 
+        elif type=="bg_decoder":
+            # notice before bg_decoder, we should concate the feature map form G and bg_encoder
+            return self.bg_decoder(input)
+        else:
             print("wrong type ! ")
+
             
 # use longsize to select which network
 def define_decoder_mask(longsize=512, norm='instance',gpu_ids=[]):
@@ -480,6 +489,8 @@ def define_encoder_mask(longsize=512, norm='instance',gpu_ids=[]):
         net_encoder = EncoderGenerator_mask_mouth(norm_layer)  # input longsize 256 to 512*4*4
     elif longsize == 32:
         net_encoder = EncoderGenerator_mask_eye(norm_layer)  # input longsize 256 to 512*4*4
+    elif longsize == 30:
+        net_encoder = EncoderGenerator_mask_nose(norm_layer)  # input longsize 256 to 512*4*4
     else:
         print("not implemented !!")
 
@@ -490,6 +501,44 @@ def define_encoder_mask(longsize=512, norm='instance',gpu_ids=[]):
         net_encoder.cuda(gpu_ids[0])
     net_encoder.apply(weights_init)
     return net_encoder
+
+class  EncoderGenerator_mask_nose(nn.Module):
+    """docstring for  EncoderGenerator"""
+    def __init__(self, norm_layer):
+        super( EncoderGenerator_mask_nose, self).__init__()
+        layers_list = []
+        
+        # 3*80*144
+        layers_list.append(EncoderBlock(channel_in=3, channel_out=64, kernel_size=4, padding=1, stride=2))  # 40*72
+        layers_list.append(EncoderBlock(channel_in=64, channel_out=128, kernel_size=4, padding=1, stride=2))  # 20*36
+        layers_list.append(EncoderBlock(channel_in=128, channel_out=256, kernel_size=4, padding=1, stride=2))  # 10*18
+        layers_list.append(EncoderBlock(channel_in=256, channel_out=512, kernel_size=4, padding=1, stride=2))  # 5*9
+        # layers_list.append(EncoderBlock(channel_in=512, channel_out=512, kernel_size=4, padding=1, stride=2))  # 3*5
+        
+        # final shape Bx256*7*6
+        self.conv = nn.Sequential(*layers_list)
+        self.fc_mu = nn.Sequential(nn.Linear(in_features=512*5*9, out_features=1024),
+                                # nn.BatchNorm1d(num_features=1024,momentum=0.9),
+                                nn.ReLU(True),
+                                nn.Linear(in_features=1024, out_features=512))
+        self.fc_var = nn.Sequential(nn.Linear(in_features=512*5*9, out_features=1024),
+                                # nn.BatchNorm1d(num_features=1024,momentum=0.9),
+                                nn.ReLU(True),
+                                nn.Linear(in_features=1024, out_features=512))
+        # self.c_mu = nn.Conv2d(in_channels=512, out_channels=512, kernel_size=1, padding=0, stride=1)
+        # self.c_var = nn.Conv2d(in_channels=512, out_channels=512, kernel_size=1, padding=0, stride=1)
+
+
+    def forward(self, ten):
+        ten = self.conv(ten)
+        ten = ten.view(ten.size()[0],-1)
+        mu = self.fc_mu(ten)
+        logvar = self.fc_var(ten)
+        return mu,logvar
+
+    def __call__(self, *args, **kwargs):
+        return super(EncoderGenerator_mask_nose, self).__call__(*args, **kwargs)
+
 
 class  EncoderGenerator_mask_mouth(nn.Module):
     """docstring for  EncoderGenerator"""
