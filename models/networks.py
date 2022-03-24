@@ -329,10 +329,10 @@ class DecoderGenerator_mask_nose_image(nn.Module):
         # layers_list.append(nn.BatchNorm2d(256, momentum=0.9))
         # layers_list.append(nn.ReLU(True))
 
-        layers_list.append(DecoderBlock(channel_in=512, channel_out=256, kernel_size=(5,4), padding=1, stride=2, output_padding=0)) #9*4
-        layers_list.append(DecoderBlock(channel_in=256, channel_out=128, kernel_size=4, padding=1, stride=2, output_padding=0)) #18*8  
-        layers_list.append(DecoderBlock(channel_in=128, channel_out=64, kernel_size=4, padding=1, stride=2, output_padding=0)) #36*16
-        layers_list.append(DecoderBlock(channel_in=64, channel_out=64, kernel_size=4, padding=1, stride=2, output_padding=0)) #72*32
+        layers_list.append(DecoderBlock(channel_in=512, channel_out=256, kernel_size=(4,5), padding=1, stride=2, output_padding=0)) #8*5
+        layers_list.append(DecoderBlock(channel_in=256, channel_out=128, kernel_size=4, padding=1, stride=2, output_padding=0)) #16*10  
+        layers_list.append(DecoderBlock(channel_in=128, channel_out=64, kernel_size=4, padding=1, stride=2, output_padding=0)) #32*20
+        layers_list.append(DecoderBlock(channel_in=64, channel_out=64, kernel_size=4, padding=1, stride=2, output_padding=0)) #64*40
         # layers_list.append(DecoderBlock(channel_in=64, channel_out=64, kernel_size=4, padding=1, stride=2, output_padding=0)) #64*64
         layers_list.append(nn.ReflectionPad2d(2))
         layers_list.append(nn.Conv2d(64,3,kernel_size=5,padding=0))
@@ -345,11 +345,11 @@ class DecoderGenerator_mask_nose_image(nn.Module):
     def forward(self, ten):
         # print("in DecoderGenerator, print some shape ")
         ten = self.fc(ten)
-        ten = ten.view(ten.size()[0],512, 2, 3)
+        ten = ten.view(ten.size()[0],512, 4, 2)
         ten = self.conv(ten)
         assert ten.size()[1] == 3
-        assert ten.size()[2] == 72
-        assert ten.size()[3] == 32
+        assert ten.size()[2] == 64
+        assert ten.size()[3] == 40
         return ten
 
     def __call__(self, *args, **kwargs):
@@ -463,8 +463,8 @@ class DecoderGenerator_mask_nose(nn.Module):
         self.fc = nn.Sequential(nn.Linear(in_features=512, out_features=512*4*2))
         layers_list = []
 
-        layers_list.append(DecoderBlock(channel_in=512, channel_out=256, kernel_size=4, padding=1, stride=2)) #8*4
-        layers_list.append(DecoderBlock(channel_in=256, channel_out=256, kernel_size=4, padding=1, stride=2)) #16*8
+        layers_list.append(DecoderBlock(channel_in=512, channel_out=256, kernel_size=(4,5), padding=1, stride=2)) #8*5
+        layers_list.append(DecoderBlock(channel_in=256, channel_out=256, kernel_size=4, padding=1, stride=2)) #16*10
         # layers_list.append(DecoderBlock(channel_in=256, channel_out=256, kernel_size=4, padding=1, stride=2)) #40*72
 
         self.conv = nn.Sequential(*layers_list)
@@ -474,11 +474,11 @@ class DecoderGenerator_mask_nose(nn.Module):
         # ten = self.fc(ten)
         # ten = ten.view(ten.size()[0],512, 4, 4)
         ten = self.fc(ten)
-        ten = ten.view(ten.size()[0],512, 3, 5)
+        ten = ten.view(ten.size()[0],512, 4, 2)
         ten = self.conv(ten)
         assert ten.size()[1] == 256
         assert ten.size()[2] == 16
-        assert ten.size()[3] == 8
+        assert ten.size()[3] == 10
         return ten
 
     def __call__(self, *args, **kwargs):
@@ -579,20 +579,20 @@ class  EncoderGenerator_mask_nose(nn.Module):
         super( EncoderGenerator_mask_nose, self).__init__()
         layers_list = []
         
-        # 3*80*144 #3*72*32
-        layers_list.append(EncoderBlock(channel_in=3, channel_out=64, kernel_size=4, padding=1, stride=2))  # 36*16
-        layers_list.append(EncoderBlock(channel_in=64, channel_out=128, kernel_size=4, padding=1, stride=2))  #18*8
-        layers_list.append(EncoderBlock(channel_in=128, channel_out=256, kernel_size=4, padding=1, stride=2))  #9*4
+        # 3*80*144 #3*64*40
+        layers_list.append(EncoderBlock(channel_in=3, channel_out=64, kernel_size=4, padding=1, stride=2))  # 32*20
+        layers_list.append(EncoderBlock(channel_in=64, channel_out=128, kernel_size=4, padding=1, stride=2))  #16*10
+        layers_list.append(EncoderBlock(channel_in=128, channel_out=256, kernel_size=4, padding=1, stride=2))  #8*5
         layers_list.append(EncoderBlock(channel_in=256, channel_out=512, kernel_size=4, padding=1, stride=2))  #4*2
         # layers_list.append(EncoderBlock(channel_in=512, channel_out=512, kernel_size=4, padding=1, stride=2))  # 3*5
         
         # final shape Bx256*7*6
         self.conv = nn.Sequential(*layers_list)
-        self.fc_mu = nn.Sequential(nn.Linear(in_features=512*5*9, out_features=1024),
+        self.fc_mu = nn.Sequential(nn.Linear(in_features=512*4*2, out_features=1024),
                                 # nn.BatchNorm1d(num_features=1024,momentum=0.9),
                                 nn.ReLU(True),
                                 nn.Linear(in_features=1024, out_features=512))
-        self.fc_var = nn.Sequential(nn.Linear(in_features=512*5*9, out_features=1024),
+        self.fc_var = nn.Sequential(nn.Linear(in_features=512*4*2, out_features=1024),
                                 # nn.BatchNorm1d(num_features=1024,momentum=0.9),
                                 nn.ReLU(True),
                                 nn.Linear(in_features=1024, out_features=512))

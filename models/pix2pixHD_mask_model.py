@@ -60,7 +60,7 @@ class Pix2PixHD_mask_Model(BaseModel):
         print('netG_input_nc',netG_input_nc)
         self.netG = networks.define_embed_bg_G(netG_input_nc, opt.output_nc, opt.ngf, opt.netG, 
                                        opt.n_downsample_global, 9, opt.n_local_enhancers, 
-                                       opt.n_blocks_local, opt.norm, 256*10, gpu_ids=self.gpu_ids)
+                                       opt.n_blocks_local, opt.norm, 256*12, gpu_ids=self.gpu_ids)
         
         # self.netG = networks.define_embed_G(netG_input_nc, opt.output_nc, opt.ngf, opt.netG, 
         #                                opt.n_downsample_global, 9, opt.n_local_enhancers, 
@@ -337,7 +337,7 @@ class Pix2PixHD_mask_Model(BaseModel):
 
         mask4_image = torch.zeros(label.size()[0],3,32,48).cuda()
         mask5_image = torch.zeros(label.size()[0],3,32,48).cuda()   #H=32, W=48
-        mask_nose_image = torch.zeros(label.size()[0],3,70,30).cuda()   #W=30, H=70
+        mask_nose_image = torch.zeros(label.size()[0],3,64,40).cuda()   #W=30, H=70
         mask_mouth_image = torch.zeros(label.size()[0],3,80,144).cuda()   #W=144, H=80
         mask_mouth = torch.zeros(label.size()[0],3,80,144).cuda()
 
@@ -353,7 +353,7 @@ class Pix2PixHD_mask_Model(BaseModel):
         for batch_index in range(0,label.size()[0]):
             mask4_image[batch_index] = real_image[batch_index,:,int(mask_list[batch_index][0])-16:int(mask_list[batch_index][0])+16,int(mask_list[batch_index][1])-24:int(mask_list[batch_index][1])+24]
             mask5_image[batch_index] = real_image[batch_index,:,int(mask_list[batch_index][2])-16:int(mask_list[batch_index][2])+16,int(mask_list[batch_index][3])-24:int(mask_list[batch_index][3])+24]
-            mask_nose_image[batch_index] = real_image[batch_index,:,int(mask_list[batch_index][6])-36:int(mask_list[batch_index][6])+36,int(mask_list[batch_index][7])-16:int(mask_list[batch_index][7])+16]
+            mask_nose_image[batch_index] = real_image[batch_index,:,int(mask_list[batch_index][6])-32:int(mask_list[batch_index][6])+32,int(mask_list[batch_index][7])-20:int(mask_list[batch_index][7])+20]
             
             mask_mouth_image[batch_index] = real_image[batch_index,:,int(mask_list[batch_index][4])-40:int(mask_list[batch_index][4])+40,int(mask_list[batch_index][5])-72:int(mask_list[batch_index][5])+72]
             mask_mouth[batch_index] = mask_mouth_whole[batch_index,:,int(mask_list[batch_index][4])-40:int(mask_list[batch_index][4])+40,int(mask_list[batch_index][5])-72:int(mask_list[batch_index][5])+72]
@@ -376,9 +376,7 @@ class Pix2PixHD_mask_Model(BaseModel):
         LL_mask = input_label[:,9:10,:,:]
         HA_mask = input_label[:,10:,:,:]
         #print('HA_mask',HA_mask.shape)
-        '''mask_skin_pic = input_label[1,4:5,:,:].cpu()
-        mask_skin_pic= transforms.functional.to_pil_image(mask_skin_pic)   
-        mask_skin_pic.save('LeftEye.png')'''
+        
         #combinedLabel_mask=torch.cat((BG_mask,NO_mask),1)
         encode_label_feature_BG = self.netG.forward(BG_mask,type="label_encoder") #Background encoder
         encode_label_feature_NO = self.netG.forward(NO_mask,type="label_encoder") #Background encoder
@@ -387,9 +385,9 @@ class Pix2PixHD_mask_Model(BaseModel):
         encode_label_feature_RE = self.netG.forward(torch.cat((RB_mask,RE_mask),1),type="combined_model") #Right Eye Encoder
         encode_label_feature_MO = self.netG.forward(torch.cat((UL_mask,LL_mask,MO_mask),1),type="Tri_Model") #Mouth Encoder
         encode_label_feature_HA = self.netG.forward(HA_mask,type="label_encoder") #Hair Encoder
-        mask_skin_pic = encode_label_feature_NO[0,1,:,:].cpu()
+        '''mask_skin_pic = encode_label_feature_NO[0,1,:,:].cpu()
         mask_skin_pic= transforms.functional.to_pil_image(mask_skin_pic)   
-        mask_skin_pic.save('input_label.png')
+        mask_skin_pic.save('input_label.png')'''
 
 
         #print('encode_label_feature',encode_label_feature.shape)
@@ -488,21 +486,22 @@ class Pix2PixHD_mask_Model(BaseModel):
 
         reorder_decode_embed_feature4 = decode_embed_feature4[new_order]
         reorder_decode_embed_feature5 = decode_embed_feature5[new_order]
-        reorder_decode_embed_feature_nose = decode_embed_feature_nose[new_order]
+        reorder_decode_embed_feature_nose = decode_embed_feature_nose[new_order]   #[4, 256, 18, 8]
         reorder_decode_embed_feature_mouth = decode_embed_feature_mouth[new_order]
         reorder_decode_embed_feature_skin = decode_embed_feature_skin[new_order]
         reorder_decode_embed_feature_hair = decode_embed_feature_hair[new_order]
-                #35/4  15/4
+        #print('reorder_decode_embed_feature_nose',reorder_decode_embed_feature_nose.shape)
         for batch_index in range(0,label.size()[0]):
             try:
                 reorder_left_eye_tensor[batch_index,:,int(mask_list[batch_index][0]/4+0.5)-4:int(mask_list[batch_index][0]/4+0.5)+4,int(mask_list[batch_index][1]/4+0.5)-6:int(mask_list[batch_index][1]/4+0.5)+6] += reorder_decode_embed_feature4[batch_index]
                 reorder_right_eye_tensor[batch_index,:,int(mask_list[batch_index][2]/4+0.5)-4:int(mask_list[batch_index][2]/4+0.5)+4,int(mask_list[batch_index][3]/4+0.5)-6:int(mask_list[batch_index][3]/4+0.5)+6] += reorder_decode_embed_feature5[batch_index]
-                reorder_nose_tensor[batch_index,:,int(mask_list[batch_index][2]/4+0.5)-9:int(mask_list[batch_index][2]/4+0.5)+9,int(mask_list[batch_index][3]/4+0.5)-4:int(mask_list[batch_index][3]/4+0.5)+4] += reorder_decode_embed_feature_nose[batch_index]
+                reorder_nose_tensor[batch_index,:,int(mask_list[batch_index][6]/4+0.5)-8:int(mask_list[batch_index][6]/4+0.5)+8,int(mask_list[batch_index][7]/4+0.5)-5:int(mask_list[batch_index][7]/4+0.5)+5] += reorder_decode_embed_feature_nose[batch_index]
                 reorder_mouth_tensor[batch_index,:,int(mask_list[batch_index][4]/4+0.5)-10:int(mask_list[batch_index][4]/4+0.5)+10,int(mask_list[batch_index][5]/4+0.5)-18:int(mask_list[batch_index][5]/4+0.5)+18] += reorder_decode_embed_feature_mouth[batch_index]
             except:
                 print("wrong0 ! ")
 
-        reconstruct_transfer_face = self.netG.forward(torch.cat((encode_label_feature_BG,encode_label_feature,encode_label_feature_NO,encode_label_feature_LE,encode_label_feature_RE,encode_label_feature_MO,encode_label_feature_HA,reorder_left_eye_tensor,reorder_right_eye_tensor,reorder_nose_tensor,reorder_decode_embed_feature_skin,reorder_decode_embed_feature_hair,reorder_mouth_tensor),1),type="image_G")
+        reconstruct_transfer_face = self.netG.forward(torch.cat((encode_label_feature_BG,encode_label_feature,encode_label_feature_NO,encode_label_feature_LE,encode_label_feature_RE,encode_label_feature_MO,encode_label_feature_HA,reorder_left_eye_tensor,
+        reorder_right_eye_tensor,reorder_nose_tensor,reorder_decode_embed_feature_skin,reorder_decode_embed_feature_hair,reorder_mouth_tensor),1),type="image_G")
 
         reconstruct_transfer_image = self.netG.forward(torch.cat((reconstruct_transfer_face,mask_bg_feature),1),type="bg_decoder")
 
@@ -533,7 +532,7 @@ class Pix2PixHD_mask_Model(BaseModel):
         for batch_index in range(0,label.size()[0]):
             try:
                 left_eye_tensor[batch_index,:,int(mask_list[batch_index][0]/4+0.5)-4:int(mask_list[batch_index][0]/4+0.5)+4,int(mask_list[batch_index][1]/4+0.5)-6:int(mask_list[batch_index][1]/4+0.5)+6] += decode_embed_feature4[batch_index]
-                nose_tensor[batch_index,:,int(mask_list[batch_index][0]/4+0.5)-9:int(mask_list[batch_index][0]/4+0.5)+9,int(mask_list[batch_index][1]/4+0.5)-4:int(mask_list[batch_index][1]/4+0.5)+4] += decode_embed_feature_nose[batch_index]
+                nose_tensor[batch_index,:,int(mask_list[batch_index][6]/4+0.5)-8:int(mask_list[batch_index][6]/4+0.5)+8,int(mask_list[batch_index][7]/4+0.5)-5:int(mask_list[batch_index][7]/4+0.5)+5] += decode_embed_feature_nose[batch_index]
                 right_eye_tensor[batch_index,:,int(mask_list[batch_index][2]/4+0.5)-4:int(mask_list[batch_index][2]/4+0.5)+4,int(mask_list[batch_index][3]/4+0.5)-6:int(mask_list[batch_index][3]/4+0.5)+6] += decode_embed_feature5[batch_index]
                 mouth_tensor[batch_index,:,int(mask_list[batch_index][4]/4+0.5)-10:int(mask_list[batch_index][4]/4+0.5)+10,int(mask_list[batch_index][5]/4+0.5)-18:int(mask_list[batch_index][5]/4+0.5)+18] += decode_embed_feature_mouth[batch_index]
             except:
@@ -541,7 +540,7 @@ class Pix2PixHD_mask_Model(BaseModel):
 
         # loss_KL4 = -0.5*torch.sum(-log_variances4.exp() - torch.pow(mus4,2) + log_variances4 + 1, 1)
 
-        reconstruct_face = self.netG.forward(torch.cat((encode_label_feature_BG,encode_label_feature,encode_label_feature_LE,encode_label_feature_RE,encode_label_feature_MO,encode_label_feature_HA,left_eye_tensor,right_eye_tensor,nose_tensor,decode_embed_feature_skin,decode_embed_feature_hair,mouth_tensor),1),type="image_G")
+        reconstruct_face = self.netG.forward(torch.cat((encode_label_feature_BG,encode_label_feature,encode_label_feature_NO,encode_label_feature_LE,encode_label_feature_RE,encode_label_feature_MO,encode_label_feature_HA,left_eye_tensor,right_eye_tensor,nose_tensor,decode_embed_feature_skin,decode_embed_feature_hair,mouth_tensor),1),type="image_G")
 
         reconstruct_image = self.netG.forward(torch.cat((reconstruct_face,mask_bg_feature),1),type="bg_decoder")        
 
@@ -592,14 +591,14 @@ class Pix2PixHD_mask_Model(BaseModel):
                     loss_G_GAN_Feat += D_weights * feat_weights * \
                         self.criterionFeat(pred_fake[i][j], pred_real[i][j].detach()) * self.opt.lambda_feat
         
-        all_mask_tensor = torch.cat((mask_left_eye,mask_right_eye,mask_nose,mask_skin,mask_hair,mask_mouth),1)
+        all_mask_tensor = torch.cat((mask_left_eye,mask_right_eye,mask_skin,mask_hair,mask_mouth,mask_nose),1)
         # mask_weight_tensor = torch.zeros(5)
         # mask_weight_tensor[0] = 10
         # mask_weight_tensor[1] = 10
         # mask_weight_tensor[2] = 5
         # mask_weight_tensor[3] = 1
         # mask_weight_tensor[4] = 10
-        mask_weight_list = [10,10,5,5,10]
+        mask_weight_list = [10,10,5,5,10,10]
         # VGG feature matching loss
         loss_G_VGG = 0
         if not self.opt.no_vgg_loss:

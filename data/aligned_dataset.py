@@ -201,12 +201,12 @@ class AlignedDataset(BaseDataset):
             y_mean = int((this_top+this_bottom)/2)
             mask_tensor[6] = y_mean
             mask_tensor[7] = x_mean
-            assert 36<mask_tensor[6]<256-36
-            assert 16<mask_tensor[7]<256-16
+            assert 32<mask_tensor[6]<256-32
+            assert 20<mask_tensor[7]<256-20
 
         except:
-            mask_tensor[6] = 150
-            mask_tensor[7] = 125
+            mask_tensor[6] = 128
+            mask_tensor[7] = 128
             print("Nose problem --------------",'index of faulty image:',index, 'Path:',A_path)
 
             # mask_list.append(184) # or 180
@@ -343,12 +343,12 @@ class AlignedDataset(BaseDataset):
                 y_mean = int((this_top+this_bottom)/2)
                 mask_tensor[6] = y_mean
                 mask_tensor[7] = x_mean
-                assert 35<mask_tensor[6]<256-35
-                assert 15<mask_tensor[7]<256-15
+                assert 32<mask_tensor[6]<256-32
+                assert 20<mask_tensor[7]<256-20
 
             except:
-                mask_tensor[6] = 150
-                mask_tensor[7] = 125
+                mask_tensor[6] = 128
+                mask_tensor[7] = 128
                 print("Nose problem --------------",'index of faulty image:',index, 'Path:',A_path)
 
             assert 16<mask_tensor2[0]<256-16
