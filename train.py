@@ -233,14 +233,14 @@ for epoch in range(start_epoch, opt.niter + opt.niter_decay + 1):
                                        ('transfer_label', util.tensor2label(transfer_label.data[0], opt.label_nc)),
                                        ('transfer_image', util.tensor2im(transfer_image.data[0])),
                                        ('reconstruct_image', util.tensor2im(reconstruct.data[0])),
-                                       ('real_image', util.tensor2im(data['bg_image'][0]))
+                                       ('real_image', util.tensor2im(data['bg_image'][0])),
                                        # ('parsing_label', util.tensor2label(label_out.data[0], opt.label_nc)),
                                        # ('real_parsing_label', util.tensor2label(real_parsing_label.data[0], opt.label_nc)),
-                                       # ('reconstruct_left_eye', util.tensor2im(left_eye_reconstruct.data[0])),
-                                       # ('reconstruct_right_eye', util.tensor2im(right_eye_reconstruct.data[0])),
-                                       # ('reconstruct_skin', util.tensor2im(skin_reconstruct.data[0])),
-                                       # ('reconstruct_hair', util.tensor2im(hair_reconstruct.data[0])),
-                                       # ('reconstruct_mouth', util.tensor2im(mouth_reconstruct.data[0])),
+                                       ('reconstruct_left_eye', util.tensor2im(left_eye_reconstruct.data[0])),
+                                       ('reconstruct_right_eye', util.tensor2im(right_eye_reconstruct.data[0])),
+                                       ('reconstruct_skin', util.tensor2im(skin_reconstruct.data[0])),
+                                       ('reconstruct_hair', util.tensor2im(hair_reconstruct.data[0])),
+                                       ('reconstruct_mouth', util.tensor2im(mouth_reconstruct.data[0])),
                                        # ('mask_lefteye', util.tensor2im(left_eye_real.data[0]))
                                        ])
             else:

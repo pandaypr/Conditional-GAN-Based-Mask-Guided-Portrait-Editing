@@ -330,7 +330,9 @@ class Pix2PixHD_mask_Model(BaseModel):
         # start
 
         mask4_image = torch.zeros(label.size()[0],3,32,48).cuda()
+        mask4 = torch.zeros(label.size()[0],3,32,48).cuda()
         mask5_image = torch.zeros(label.size()[0],3,32,48).cuda()
+        mask5 = torch.zeros(label.size()[0],3,32,48).cuda()
         mask_mouth_image = torch.zeros(label.size()[0],3,80,144).cuda()
         mask_mouth = torch.zeros(label.size()[0],3,80,144).cuda()
 
@@ -342,16 +344,31 @@ class Pix2PixHD_mask_Model(BaseModel):
         mask_hair_image = mask_hair * real_image
 
         mask_mouth_whole = ((label==7)+(label==8)+(label==9)).type(torch.cuda.FloatTensor)
+        mask4_whole = (label==4).type(torch.cuda.FloatTensor)
+        mask5_whole = (label==5).type(torch.cuda.FloatTensor)
 
         for batch_index in range(0,label.size()[0]):
             mask4_image[batch_index] = real_image[batch_index,:,int(mask_list[batch_index][0])-16:int(mask_list[batch_index][0])+16,int(mask_list[batch_index][1])-24:int(mask_list[batch_index][1])+24]
-            mask5_image[batch_index] = real_image[batch_index,:,int(mask_list[batch_index][2])-16:int(mask_list[batch_index][2])+16,int(mask_list[batch_index][3])-24:int(mask_list[batch_index][3])+24]
-            mask_mouth_image[batch_index] = real_image[batch_index,:,int(mask_list[batch_index][4])-40:int(mask_list[batch_index][4])+40,int(mask_list[batch_index][5])-72:int(mask_list[batch_index][5])+72]
+            mask4[batch_index] = mask4_whole[batch_index,:,int(mask_list[batch_index][0])-16:int(mask_list[batch_index][0])+16,int(mask_list[batch_index][1])-24:int(mask_list[batch_index][1])+24]
             
+            mask5_image[batch_index] = real_image[batch_index,:,int(mask_list[batch_index][2])-16:int(mask_list[batch_index][2])+16,int(mask_list[batch_index][3])-24:int(mask_list[batch_index][3])+24]
+            mask5[batch_index] = mask5_whole[batch_index,:,int(mask_list[batch_index][2])-16:int(mask_list[batch_index][2])+16,int(mask_list[batch_index][3])-24:int(mask_list[batch_index][3])+24]
+            
+            mask_mouth_image[batch_index] = real_image[batch_index,:,int(mask_list[batch_index][4])-40:int(mask_list[batch_index][4])+40,int(mask_list[batch_index][5])-72:int(mask_list[batch_index][5])+72]
             mask_mouth[batch_index] = mask_mouth_whole[batch_index,:,int(mask_list[batch_index][4])-40:int(mask_list[batch_index][4])+40,int(mask_list[batch_index][5])-72:int(mask_list[batch_index][5])+72]
 
         # use masked mouth region
         mask_mouth_image = mask_mouth * mask_mouth_image
+        mask4_image = mask4 * mask4_image
+        mask5_image = mask5 * mask5_image
+
+        '''mask_skin_pic = mask4_image[0,:,:,:].cpu()
+        mask_skin_pic= transforms.functional.to_pil_image(mask_skin_pic)   
+        mask_skin_pic.save('LeftEye.png')
+
+        mask_skin_pic = mask5_image[0,:,:,:].cpu()
+        mask_skin_pic= transforms.functional.to_pil_image(mask_skin_pic)   
+        mask_skin_pic.save('Right Eye.png')'''
 
 
         encode_label_feature = self.netG.forward(input_label,type="label_encoder")
@@ -359,7 +376,7 @@ class Pix2PixHD_mask_Model(BaseModel):
         mask_bg = (label==0).type(torch.cuda.FloatTensor)
         mask_bg_feature = mask_bg * bg_feature
 
-
+        
         loss_mask_image = 0
         loss_KL = 0
 
@@ -895,7 +912,7 @@ class Pix2PixHD_mask_Model(BaseModel):
 
         input_label, inst_map, real_image, _, affine_real_image = self.encode_input(Variable(label), None, Variable(image), infer=True)
 
-        assert torch.__version__.startswith('0.4')
+        #assert torch.__version__.startswith('0.4')
         with torch.no_grad():
             # first go through the encoder and decoder
             self.net_encoder_left_eye.eval()
@@ -911,7 +928,9 @@ class Pix2PixHD_mask_Model(BaseModel):
             self.netG.eval()
 
             mask4_image = torch.zeros(label.size()[0],3,32,48).cuda()
+            mask4 = torch.zeros(label.size()[0],3,32,48).cuda()
             mask5_image = torch.zeros(label.size()[0],3,32,48).cuda()
+            mask5 = torch.zeros(label.size()[0],3,32,48).cuda()
             mask_mouth_image = torch.zeros(label.size()[0],3,80,144).cuda()
             mask_mouth = torch.zeros(label.size()[0],3,80,144).cuda()            
 
@@ -921,7 +940,8 @@ class Pix2PixHD_mask_Model(BaseModel):
             mask_hair_image = mask_hair * real_image
 
             mask_mouth_whole = ((label==7)+(label==8)+(label==9)).type(torch.cuda.FloatTensor)
-
+            mask4_whole = (label==4).type(torch.cuda.FloatTensor)
+            mask5_whole = (label==5).type(torch.cuda.FloatTensor)
 
             bg_style_feature = self.netG.forward(real_image,type="bg_encoder")
             mask_style_bg = (label==0).type(torch.cuda.FloatTensor)
@@ -931,13 +951,17 @@ class Pix2PixHD_mask_Model(BaseModel):
 
             for batch_index in range(0,label.size()[0]):
                 mask4_image[batch_index] = real_image[batch_index,:,int(mask_list[batch_index][0])-16:int(mask_list[batch_index][0])+16,int(mask_list[batch_index][1])-24:int(mask_list[batch_index][1])+24]
+                mask4[batch_index] = mask4_whole[batch_index,:,int(mask_list[batch_index][0])-16:int(mask_list[batch_index][0])+16,int(mask_list[batch_index][1])-24:int(mask_list[batch_index][1])+24]
+                
                 mask5_image[batch_index] = real_image[batch_index,:,int(mask_list[batch_index][2])-16:int(mask_list[batch_index][2])+16,int(mask_list[batch_index][3])-24:int(mask_list[batch_index][3])+24]
-                mask_mouth_image[batch_index] = real_image[batch_index,:,int(mask_list[batch_index][4])-40:int(mask_list[batch_index][4])+40,int(mask_list[batch_index][5])-72:int(mask_list[batch_index][5])+72]
+                mask5[batch_index] = mask5_whole[batch_index,:,int(mask_list[batch_index][2])-16:int(mask_list[batch_index][2])+16,int(mask_list[batch_index][3])-24:int(mask_list[batch_index][3])+24]
 
+                mask_mouth_image[batch_index] = real_image[batch_index,:,int(mask_list[batch_index][4])-40:int(mask_list[batch_index][4])+40,int(mask_list[batch_index][5])-72:int(mask_list[batch_index][5])+72]
                 mask_mouth[batch_index] = mask_mouth_whole[batch_index,:,int(mask_list[batch_index][4])-40:int(mask_list[batch_index][4])+40,int(mask_list[batch_index][5])-72:int(mask_list[batch_index][5])+72]
 
             mask_mouth_image = mask_mouth * mask_mouth_image
-
+            mask4_image = mask4 * mask4_image
+            mask5_image = mask5 * mask5_image
 
             encode_label_feature = self.netG.forward(input_label,type="label_encoder")
 
@@ -1013,9 +1037,11 @@ class Pix2PixHD_mask_Model(BaseModel):
             self.netG.eval()
 
             mask4_image = torch.zeros(label.size()[0],3,32,48).cuda()
+            mask4 = torch.zeros(label.size()[0],3,32,48).cuda()
             mask5_image = torch.zeros(label.size()[0],3,32,48).cuda()
+            mask5 = torch.zeros(label.size()[0],3,32,48).cuda()
             mask_mouth_image = torch.zeros(label.size()[0],3,80,144).cuda()
-            mask_mouth = torch.zeros(label.size()[0],3,80,144).cuda()            
+            mask_mouth = torch.zeros(label.size()[0],3,80,144).cuda()               
 
             mask_skin = ((label==1)+(label==2)+(label==3)+(label==6)).type(torch.cuda.FloatTensor)
             mask_skin_image = mask_skin * real_image
@@ -1023,6 +1049,8 @@ class Pix2PixHD_mask_Model(BaseModel):
             mask_hair_image = mask_hair * real_image
 
             mask_mouth_whole = ((label==7)+(label==8)+(label==9)).type(torch.cuda.FloatTensor)
+            mask_style_bg = (label==0).type(torch.cuda.FloatTensor)
+            mask_style_bg_feature = mask_style_bg * bg_style_feature
 
 
             bg_style_feature = self.netG.forward(real_image,type="bg_encoder")
@@ -1039,7 +1067,8 @@ class Pix2PixHD_mask_Model(BaseModel):
                 mask_mouth[batch_index] = mask_mouth_whole[batch_index,:,int(mask_list[batch_index][4])-40:int(mask_list[batch_index][4])+40,int(mask_list[batch_index][5])-72:int(mask_list[batch_index][5])+72]
 
             mask_mouth_image = mask_mouth * mask_mouth_image
-
+            mask4_image = mask4 * mask4_image
+            mask5_image = mask5 * mask5_image
 
             encode_label_feature = self.netG.forward(input_label,type="label_encoder")
 
