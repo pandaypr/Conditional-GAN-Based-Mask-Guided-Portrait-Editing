@@ -1,0 +1,36 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        
+
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": [
+                "--name", "face_256",
+                "--batchSize", "4",
+                "--gpu_ids", "5",
+                "--no_instance",
+                "--dataroot", "/projects/panday/Mask_Guided_Portrait_Editing/datasets/img1/",
+                "--resize_or_crop", "none",
+                "--label_nc", "11",
+                "--n_downsample_global", "2",
+                "--longSize", "256",
+                "--norm", "batch",
+                "--display_freq", "30",
+                "--data_augmentation",
+                "--niter", "10",
+                "--niter_decay", "45",
+                "--mask_model",
+                "--no_lsgan",
+                "--debug_mask_part"
+            ],
+        }
+    ]
+}
