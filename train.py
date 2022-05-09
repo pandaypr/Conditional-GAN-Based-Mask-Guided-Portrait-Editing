@@ -171,7 +171,7 @@ for epoch in range(start_epoch, opt.niter + opt.niter_decay + 1):
             
             
         loss_D2 = (loss_dict['D2_fake'] + loss_dict['D2_real']) * 0.5
-        loss_G_together = loss_dict['G_GAN']*a_weight + loss_dict['G2_GAN'] + loss_dict['G_GAN_Feat']*a_weight + loss_dict['G_VGG']*1*a_weight + loss_dict['L2_image']*2*a_weight + loss_dict['L2_mask_image'] * 500 + loss_dict['ParsingLoss']*10
+        loss_G_together = loss_dict['G_GAN']*a_weight + loss_dict['G2_GAN'] + loss_dict['G_GAN_Feat']*a_weight + loss_dict['G_VGG']*1*a_weight + loss_dict['L2_image']*2*a_weight + loss_dict['KL_embed'] * 1000 +loss_dict['L2_mask_image'] * 500  + loss_dict['ParsingLoss']*10
         loss_D = (loss_dict['D_fake'] + loss_dict['D_real']) * 0.5 * a_weight
         
         model.module.optimizer_G_together.zero_grad()
@@ -233,14 +233,14 @@ for epoch in range(start_epoch, opt.niter + opt.niter_decay + 1):
                                        ('transfer_label', util.tensor2label(transfer_label.data[0], opt.label_nc)),
                                        ('transfer_image', util.tensor2im(transfer_image.data[0])),
                                        ('reconstruct_image', util.tensor2im(reconstruct.data[0])),
-                                       ('real_image', util.tensor2im(data['bg_image'][0]))
+                                       ('real_image', util.tensor2im(data['bg_image'][0])),
                                        # ('parsing_label', util.tensor2label(label_out.data[0], opt.label_nc)),
                                        # ('real_parsing_label', util.tensor2label(real_parsing_label.data[0], opt.label_nc)),
-                                       # ('reconstruct_left_eye', util.tensor2im(left_eye_reconstruct.data[0])),
-                                       # ('reconstruct_right_eye', util.tensor2im(right_eye_reconstruct.data[0])),
-                                       # ('reconstruct_skin', util.tensor2im(skin_reconstruct.data[0])),
-                                       # ('reconstruct_hair', util.tensor2im(hair_reconstruct.data[0])),
-                                       # ('reconstruct_mouth', util.tensor2im(mouth_reconstruct.data[0])),
+                                       ('reconstruct_left_eye', util.tensor2im(left_eye_reconstruct.data[0])),
+                                       ('reconstruct_right_eye', util.tensor2im(right_eye_reconstruct.data[0])),
+                                       ('reconstruct_skin', util.tensor2im(skin_reconstruct.data[0])),
+                                       ('reconstruct_hair', util.tensor2im(hair_reconstruct.data[0])),
+                                       ('reconstruct_mouth', util.tensor2im(mouth_reconstruct.data[0])),
                                        # ('mask_lefteye', util.tensor2im(left_eye_real.data[0]))
                                        ])
             else:
