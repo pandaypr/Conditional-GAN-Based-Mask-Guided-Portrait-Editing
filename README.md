@@ -38,4 +38,5 @@ Vision and Pattern Recognition, 2019, pp. 3436–3445.
 ### latex files for images drawn
 - Contains the python codes for drawing figures in latex compatible format.
 ### media
-- Contains all the files for figures used in this project in pdf format generaed from libreoffice draw and also the raw libreoffice files
+- Contains files for figures used in this project in pdf format generaed from libreoffice draw and also the raw libreoffice files
+- Contains all the results of the model used in this project in .png format
