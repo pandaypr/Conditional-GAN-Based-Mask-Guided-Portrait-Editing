@@ -36,4 +36,6 @@ Vision and Pattern Recognition, 2019, pp. 3436–3445.
 #### src
 - All the implementation files, instead of branches for each implementation all the files are saved seperately in zip format as asked in the ISS student wiki
 ### latex files for images drawn
-- contains the python codes for drawing figures in latex compatible format
+- Contains the python codes for drawing figures in latex compatible format.
+### media
+- Contains all the files for figures used in this project in pdf format generaed from libreoffice draw and also the raw libreoffice files
