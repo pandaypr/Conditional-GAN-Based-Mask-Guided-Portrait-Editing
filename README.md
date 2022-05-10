@@ -19,7 +19,7 @@ Vision and Pattern Recognition, 2019, pp. 3436–3445.
 - CUDA9.2 or 10.
 
 ### Running code
-- download pretrained models [here](https://drive.google.com/drive/folders/1TFI2dFzi6VZ9hL6Tin6geowUre8D_tgC?usp=sharing), put it under folder checkpoints/pretrained .
+- download pretrained models [from my google drive](https://drive.google.com/drive/folders/1TFI2dFzi6VZ9hL6Tin6geowUre8D_tgC?usp=sharing), put it under folder checkpoints/pretrained .
 - component editing:
   ./scripts/test_edit.sh
 - component transfer:
