@@ -1,1 +1,0 @@
-python test_edit_free.py --gpu_ids 7 --name face_256/ --no_instance --dataroot /projects/panday/Mask_Guided_Portrait_Editing/datasets/Testing --resize_or_crop none --label_nc 11 --n_downsample_global 2 --longSize 256 --norm batch --mask_model --debug_mask_part --phase editfree --phase2 editfree --test_type encode
