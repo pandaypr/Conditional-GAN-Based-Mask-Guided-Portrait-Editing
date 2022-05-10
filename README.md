@@ -29,3 +29,6 @@ Vision and Pattern Recognition, 2019, pp. 3436–3445.
   get the component transfer results.
 - training:
   ./scripts/train.sh
+
+### Description of the files in each directory
+- 
