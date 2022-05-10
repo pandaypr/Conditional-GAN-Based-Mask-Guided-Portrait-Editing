@@ -7,8 +7,7 @@ This thesis investigates geometry-guided technique using semantic facial mask as
 ## Citation
 Citation for the original research work
 ```
-S. Gu, J. Bao, H. Yang, D. Chen, F. Wen and L. Yuan, “Mask-guided portrait edit-
-ing with conditional gans,” in Proceedings of the IEEE/CVF Conference on Computer
+S. Gu, J. Bao, H. Yang, D. Chen, F. Wen and L. Yuan, “Mask-guided portrait editing with conditional gans,” in Proceedings of the IEEE/CVF Conference on Computer
 Vision and Pattern Recognition, 2019, pp. 3436–3445.
 ```
 
