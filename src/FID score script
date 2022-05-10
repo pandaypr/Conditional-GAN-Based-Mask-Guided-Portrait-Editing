@@ -1,0 +1,1 @@
+python -m pytorch_fid ./datasets/inimagesTestfree ./datasets/outimagesTestfree --device cuda:7
