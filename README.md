@@ -35,4 +35,5 @@ Vision and Pattern Recognition, 2019, pp. 3436–3445.
 - PDF and raw data in latex zip format for the thesis documents
 #### src
 - All the implementation files, instead of branches for each implementation all the files are saved seperately in zip format as asked in the ISS student wiki
-###
+### latex files for images drawn
+- contains the python codes for drawing figures in latex compatible format
