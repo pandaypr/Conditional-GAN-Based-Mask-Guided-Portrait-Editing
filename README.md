@@ -30,5 +30,9 @@ Vision and Pattern Recognition, 2019, pp. 3436–3445.
 - training:
   ./scripts/train.sh
 
-## Description of the files in each directory
+### Description of the files in each directory
 #### Thesis
+- PDF and raw data in latex zip format for the thesis documents
+#### src
+- All the implementation files, instead of branches for each implementation all the files are saved seperately in zip format as asked in the ISS student wiki
+###
