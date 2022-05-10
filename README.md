@@ -30,5 +30,5 @@ Vision and Pattern Recognition, 2019, pp. 3436–3445.
 - training:
   ./scripts/train.sh
 
-### Description of the files in each directory
-####Thesis
+## Description of the files in each directory
+#### Thesis
