@@ -37,6 +37,8 @@ Vision and Pattern Recognition, 2019, pp. 3436–3445.
 - All the implementation files, instead of branches for each implementation all the files are saved seperately in folders as directed in the ISS student wiki.
 ### latex files for images drawn
 - Contains the python codes for drawing figures in latex compatible format.
+### presentation
+- This directoy contains preseantation files in the pdf format.
 ### media
 - Contains files for figures used in this project in pdf format generaed from libreoffice draw and also the raw libreoffice files
 - Contains all the results of the model used in this project in .png format
